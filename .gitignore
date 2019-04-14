@@ -1,0 +1,8 @@
+*.fits
+*.fits.gz
+*.pdf
+__pycache__*
+*~
+*.pyc
+*.png
+*.hd5

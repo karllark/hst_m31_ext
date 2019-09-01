@@ -1,0 +1,17 @@
+#!/bin/bash
+
+alias fmod="~/Python_git/measure_extinction/measure_extinction/utils/fit_model.py"
+
+fmod m31_e1_j004354.05+412626.0 --png
+fmod m31_e2_j004413.84+414903.9 --png
+fmod m31_e3_j004420.52+411751.1 --png
+fmod m31_e4_j004427.47+415150.0 --png
+fmod m31_e5_j004431.66+413612.4 --png
+fmod m31_e6_j004438.71+415553.5 --png
+fmod m31_e7_j004454.37+412823.9 --png
+fmod m31_e8_j004511.82+415025.3 --png
+fmod m31_e9_j004511.85+413712.9 --png
+fmod m31_e12_j004539.00+415439.0 --png
+fmod m31_e13_j004539.70+415054.8 --png
+fmod m31_e14_j004543.46+414513.6 --png
+fmod m31_e15_j004546.81+415431.7 --png

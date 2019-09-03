@@ -2,7 +2,7 @@
 
 alias pext="~/Python_git/measure_extinction/measure_extinction/utils/plot_ext.py"
 
-extra_params="--alav --extmodels --png"
+extra_params="--alax --extmodels --png"
 
 pext m31_e1_j004354.05+412626.0_ext.fits $extra_params
 pext m31_e2_j004413.84+414903.9_ext.fits $extra_params

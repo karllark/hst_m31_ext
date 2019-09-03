@@ -1,0 +1,19 @@
+#!/bin/bash
+
+alias pext="~/Python_git/measure_extinction/measure_extinction/utils/plot_ext.py"
+
+extra_params="--alax --extmodels --png"
+
+pext m31_e1_j004354.05+412626.0_emcee_ext.fits $extra_params
+pext m31_e2_j004413.84+414903.9_emcee_ext.fits $extra_params
+pext m31_e3_j004420.52+411751.1_emcee_ext.fits $extra_params
+pext m31_e4_j004427.47+415150.0_emcee_ext.fits $extra_params
+pext m31_e5_j004431.66+413612.4_emcee_ext.fits $extra_params
+pext m31_e6_j004438.71+415553.5_emcee_ext.fits $extra_params
+pext m31_e7_j004454.37+412823.9_emcee_ext.fits $extra_params
+pext m31_e8_j004511.82+415025.3_emcee_ext.fits $extra_params
+pext m31_e9_j004511.85+413712.9_emcee_ext.fits $extra_params
+pext m31_e12_j004539.00+415439.0_emcee_ext.fits $extra_params
+pext m31_e13_j004539.70+415054.8_emcee_ext.fits $extra_params
+pext m31_e14_j004543.46+414513.6_emcee_ext.fits $extra_params
+pext m31_e15_j004546.81+415431.7_emcee_ext.fits $extra_params

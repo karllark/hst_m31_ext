@@ -123,7 +123,6 @@ def main():
         memod.velocity.fixed = True
 
     memod.fit_weights(reddened_star)
-    memod.weights["STIS"] *= 100.0
 
     if args.modtype == "whitedwarfs":
         memod.vturb.value = 0.0
@@ -138,8 +137,9 @@ def main():
 
     memod.Av.value = args.Av_init
 
-    # for wisci
-    memod.velocity.fixed = True
+    # for M31
+    memod.logZ.fixed = True
+    #memod.velocity.fixed = True
     memod.logTeff.fixed = False
     memod.logg.fixed = False
     memod.velocity.fixed = False

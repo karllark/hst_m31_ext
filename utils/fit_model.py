@@ -52,6 +52,8 @@ def main():
     args = parser.parse_args()
 
     outname = f"figs/{args.starname}_mefit"
+    resid_range = 50.0
+    lyaplot = True
 
     # WISCI
     # only_bands = ["B", "V", "R", "I", "J", "H", "K"]
@@ -61,6 +63,13 @@ def main():
     # get data
     fstarname = f"{args.starname}.dat"
     reddened_star = StarData(fstarname, path=f"{args.path}", only_bands=only_bands)
+
+    # remove low S/N STIS data - affected by systematics
+    sn_cut = 1.5
+    snr = reddened_star.data["STIS"].fluxes / reddened_star.data["STIS"].uncs
+    bvals = np.logical_and(snr < sn_cut, reddened_star.data["STIS"].waves > 0.17 * u.micron)
+    reddened_star.data["STIS"].npts[bvals] = 0
+    reddened_star.data["STIS"].fluxes[bvals] = 0
 
     if "BAND" in reddened_star.data.keys():
         band_names = reddened_star.data["BAND"].get_band_names()
@@ -99,11 +108,6 @@ def main():
         pickle.dump(modinfo, open(f"{modstr}_modinfo.p", "wb"))
     print("finished reading model files")
     print("--- %s seconds ---" % (time.time() - start_time))
-
-    # for wisci (only fit to get the stellar parameters)
-    #for ckey in list(reddened_star.data.keys()):
-    #    if ckey not in ["BAND", "STIS_Opt"]:
-    #        del reddened_star.data[ckey]
 
     # setup the model
     # memod = MEModel(modinfo=modinfo, obsdata=reddened_star)  # use to activate logf fitting
@@ -169,7 +173,7 @@ def main():
     print("best parameters")
     fitmod.pprint_parameters()
 
-    fitmod.plot(reddened_star, modinfo)
+    fitmod.plot(reddened_star, modinfo, resid_range=resid_range, lyaplot=lyaplot)
     plt.savefig(f"{outname}_minimizer.pdf")
     plt.savefig(f"{outname}_minimizer.png")
     plt.close()
@@ -190,7 +194,7 @@ def main():
         print("p50 parameters")
         fitmod2.pprint_parameters()
 
-        fitmod2.plot(reddened_star, modinfo)
+        fitmod2.plot(reddened_star, modinfo, resid_range=resid_range, lyaplot=lyaplot)
         plt.savefig(f"{outname}_mcmc.pdf")
         plt.savefig(f"{outname}_mcmc.png")
         plt.close()
@@ -221,7 +225,7 @@ def main():
     extdata.save(f"{outname.replace("figs", "exts")}_ext.fits", column_info=col_info)
 
     if args.showfit:
-        fitmod.plot(reddened_star, modinfo)
+        fitmod.plot(reddened_star, modinfo, resid_range=resid_range, lyaplot=lyaplot)
         plt.show()
 
 

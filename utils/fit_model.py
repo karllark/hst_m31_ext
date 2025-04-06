@@ -134,7 +134,7 @@ def main():
 
     # setup the model
     # memod = MEModel(modinfo=modinfo, obsdata=reddened_star)  # use to activate logf fitting
-    memod = MEModel(modinfo=modinfo)
+    memod = MEModel(modinfo=modinfo, obsdata=reddened_star)
 
     if "Teff" in reddened_star.model_params.keys():
         memod.logTeff.value = np.log10(float(reddened_star.model_params["Teff"]))
@@ -237,6 +237,10 @@ def main():
     print("initial parameters")
     memod.pprint_parameters()
 
+    memod.plot(reddened_star, modinfo, resid_range=resid_range, lyaplot=lyaplot)
+    plt.show()
+    exit()
+
     start_time = time.time()
     print("starting fitting")
 
@@ -299,6 +303,7 @@ def main():
 
     # create a stardata object with the best intrinsic (no extinction) model
     modsed = fitmod.stellar_sed(modinfo)
+    modinfo.band_names = band_names
     modsed_stardata = modinfo.SED_to_StarData(modsed)
 
     # create an extincion curve and save it

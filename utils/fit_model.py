@@ -42,7 +42,7 @@ def fit_model_parser():
     parser.add_argument(
         "--modstr",
         help="Alternative model string for grid (expert)",
-        default="tlusty_z100",
+        default="",
     )
     parser.add_argument(
         "--picmodel",
@@ -94,10 +94,7 @@ def main():
     reddened_star.data["STIS"].npts[bvals] = 0
     reddened_star.data["STIS"].fluxes[bvals] = 0
 
-    if "BAND" in reddened_star.data.keys():
-        band_names = reddened_star.data["BAND"].get_band_names()
-    else:
-        band_names = []
+    band_names = None
     data_names = list(reddened_star.data.keys())
 
     # model data
@@ -112,7 +109,13 @@ def main():
     if args.picmodel:
         modinfo = pickle.load(open(f"{modstr}_modinfo.p", "rb"))
     else:
-        tlusty_models_fullpath = glob.glob(f"{args.modpath}/{modstr}*.dat")
+        # tlusty_models_fullpath = glob.glob(f"{args.modpath}/{modstr}*.dat")
+        # fmt: off
+        tlusty_models_fullpath = (glob.glob(f"{args.modpath}/tlusty_z02*.dat")
+                                  + glob.glob(f"{args.modpath}/tlusty_z05*.dat")
+                                  + glob.glob(f"{args.modpath}/tlusty_z10*.dat")
+                                  + glob.glob(f"{args.modpath}/tlusty_z20*.dat"))
+        # fmt: on
         tlusty_models = [
             tfile[tfile.rfind("/") + 1 : len(tfile)] for tfile in tlusty_models_fullpath
         ]
@@ -213,14 +216,21 @@ def main():
     memod.vel_MW.fixed = True
 
     # set velocities to non-zero to help fitting
-    memod.velocity.value = 10.0
+    memod.velocity.value = -300.0
+    memod.velocity.fixed = True
 
     # for M31
-    memod.logZ.fixed = True
+    # memod.logZ.fixed = True
     # memod.velocity.fixed = True
     memod.logTeff.fixed = False
+    memod.logTeff.prior = (memod.logTeff.value, 0.05)
+
     memod.logg.fixed = False
-    memod.velocity.fixed = False
+    memod.logg.prior = (memod.logg.value, 0.1)
+
+    memod.logZ.value = 0.0
+    memod.logZ.prior = (0.0, 0.2)
+
     # memod.C2.fixed = True
     # memod.B3.fixed = True
     # memod.C4.fixed = True
@@ -237,9 +247,9 @@ def main():
     print("initial parameters")
     memod.pprint_parameters()
 
-    memod.plot(reddened_star, modinfo, resid_range=resid_range, lyaplot=lyaplot)
-    plt.show()
-    exit()
+    # memod.plot(reddened_star, modinfo, resid_range=resid_range, lyaplot=lyaplot)
+    # plt.show()
+    # exit()
 
     start_time = time.time()
     print("starting fitting")
@@ -303,7 +313,8 @@ def main():
 
     # create a stardata object with the best intrinsic (no extinction) model
     modsed = fitmod.stellar_sed(modinfo)
-    modinfo.band_names = band_names
+    if "BAND" in reddened_star.data.keys():
+        modinfo.band_names = reddened_star.data["BAND"].get_band_names()
     modsed_stardata = modinfo.SED_to_StarData(modsed)
 
     # create an extincion curve and save it

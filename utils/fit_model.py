@@ -311,6 +311,9 @@ def main():
 
         fitmod = fitmod2
 
+    # get the reddened star data again to have all the possible spectra and bands
+    reddened_star_full = StarData(fstarname, path=f"{args.path}", only_bands=only_bands)
+
     # create a stardata object with the best intrinsic (no extinction) model
     modsed = fitmod.stellar_sed(modinfo)
     if "BAND" in reddened_star.data.keys():
@@ -319,8 +322,6 @@ def main():
 
     # create an extincion curve and save it
     extdata = ExtData()
-    # get the reddened star data again to have all the possible spectra
-    reddened_star_full = StarData(fstarname, path=f"{args.path}", only_bands=only_bands)
     extdata.calc_elx(reddened_star_full, modsed_stardata, rel_band="ACS_F475W")
     extdata.columns = dust_columns
     extdata.save(f"{outname.replace("figs", "exts")}_ext.fits", fit_params=fit_params)

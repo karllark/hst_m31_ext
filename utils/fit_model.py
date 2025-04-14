@@ -168,26 +168,33 @@ def main():
     # add exclude regions
     exreg = {
         "e1": [0.17, 0.2],
-        "e2": [0.1701, 0.1702],
-        "e3": [0.1701, 0.1702],
+        "e2": None,
+        "e3": None,
         "e4": [0.17, 0.2],
-        "e5": [0.18, 0.2],
-        "e6": [0.183, 0.2],
-        "e7": [0.17, 0.19],
+        "e5": None,
+        "e6": None,
+        "e7": None,
         "e8": [0.162, 0.2],
-        "e9": [0.1701, 0.1702],
+        "e9": [0.162, 0.2],
         "e12": [0.165, 0.205],
         "e13": [0.165, 0.205],  # [.137, .143, .165, .205]
         "e14": [0.165, 0.21],
-        "e15": [0.183, 0.2],
-        "e17": [0.185, 0.19],
-        "e18": [0.18, 0.21],
-        "e22": [0.17, 0.19],
-        "e24": [0.18, 0.2],
+        "e15": None,
+        "e17": None,
+        "e18": None,
+        "e22": None,
+        "e24": None,
     }
 
     snum = (args.starname.split("_"))[1]
-    memod.add_exclude_region(np.flip(1.0 / (np.array(exreg[snum]) * u.micron)))
+    if exreg[snum] is not None:
+        memod.add_exclude_region(np.flip(1.0 / (np.array(exreg[snum]) * u.micron)))
+
+    # setup the relative band for the extinction curve
+    if snum in ["e17", "e18", "e22", "e24"]:
+        rel_band = "V"
+    else:
+        rel_band = "ACS_F475W"
 
     memod.fit_weights(reddened_star)
 
@@ -322,7 +329,7 @@ def main():
 
     # create an extincion curve and save it
     extdata = ExtData()
-    extdata.calc_elx(reddened_star_full, modsed_stardata, rel_band="ACS_F475W")
+    extdata.calc_elx(reddened_star_full, modsed_stardata, rel_band=rel_band)
     extdata.columns = dust_columns
     extdata.save(f"{outname.replace("figs", "exts")}_ext.fits", fit_params=fit_params)
 

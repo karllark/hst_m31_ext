@@ -230,7 +230,7 @@ def main():
     # memod.logZ.fixed = True
     # memod.velocity.fixed = True
     memod.logTeff.fixed = False
-    memod.logTeff.prior = (memod.logTeff.value, 0.05)
+    memod.logTeff.prior = (memod.logTeff.value, 0.025)
 
     memod.logg.fixed = False
     memod.logg.prior = (memod.logg.value, 0.1)

@@ -1,22 +1,66 @@
 import argparse
-import os.path
 
 import numpy as np
 import matplotlib.pyplot as pyplot
 import matplotlib
-from matplotlib.ticker import ScalarFormatter
 
-# from astropy.table import Table
 import astropy.units as u
 
-# from calc_ext import P92_Elv
-from dust_extinction.shapes import FM90
+from dust_extinction.shapes import FM90_B3
 from measure_extinction.extdata import ExtData
-from dust_extinction.shapes import G21
+
+
+def mask_bad(cdata, cname):
+    # mask bad data (lines)
+    mask = [(8.4, 8.05),
+            (7.27, 7.10),
+            (7.55, 7.45),
+            (7.75, 7.65),
+            (7.95, 7.9),
+            (6.6, 6.4),
+            (4.22, 4.17),
+            (4.28, 4.255),
+            (3.51, 3.49),
+            (3.59, 3.56),
+            (3.87, 3.82)]
+    
+    # add exclude regions
+    exreg = {
+        "e1": [0.17, 0.2],
+        "e2": None,
+        "e3": None,
+        "e4": [0.17, 0.2],
+        "e5": None,
+        "e6": None,
+        "e7": None,
+        "e8": [0.162, 0.2],
+        "e9": [0.162, 0.2],
+        "e12": [0.165, 0.205],
+        "e13": [0.165, 0.205],  # [.137, .143, .165, .205]
+        "e14": [0.165, 0.21],
+        "e15": None,
+        "e17": None,
+        "e18": None,
+        "e22": None,
+        "e24": None,
+    }
+    if exreg[cname] is not None:
+        mask.append(1.0 / np.array(exreg[cname]))
+
+    mask = 1.0 / np.array(mask)
+
+    for region in mask:
+        for src in cdata.waves.keys():
+            cdata.npts[src][
+                (cdata.waves[src].value >= region[0])
+                & (cdata.waves[src].value <= region[1])
+            ] = 0
+
+    return cdata
 
 
 def plot_all_ext(
-    ax, extdatas, kxrange, kyrange, normvals=None, yoffset_factor=0.0, annotate_key=None
+    ax, extdatas, snames, kxrange, normvals=None, yoffset_factor=0.0, annotate_key=None
 ):
     """
     plot all the extintion info on the specified plot
@@ -30,8 +74,8 @@ def plot_all_ext(
     n_cols = len(col_vals)
 
     # mod_x = np.logspace(0.0, 2.0, 200) * u.micron
-    mod_x_g21 = np.logspace(0.1, np.log10(35.0), 200) * u.micron
-    mod_x_fm90 = np.logspace(-1.0, -0.5, 200) * u.micron
+    # mod_x_g21 = np.logspace(0.1, np.log10(35.0), 200) * u.micron
+    mod_x_fm90 = 1.0 / (np.logspace(-1.0, -0.5, 200) * u.micron)
     for i in range(len(extnames)):
         k = sindxs[i]
 
@@ -41,11 +85,14 @@ def plot_all_ext(
             normval = 1.0
 
         # plot the extinction curves
-        if extnames[k].split("_")[0] == "hd283809":
-            extdatas[k].npts["IUE"][extdatas[k].waves["IUE"] > 0.315 * u.micron] = 0
+        #if extnames[k].split("_")[0] == "hd283809":
+        #    extdatas[k].npts["IUE"][extdatas[k].waves["IUE"] > 0.315 * u.micron] = 0
 
         if not args.modonly:
-            extdatas[k].plot(
+            cdata = extdatas[k]
+            cname = snames[k]
+            cdata = mask_bad(cdata, cname.split("_")[1])
+            cdata.plot(
                 ax,
                 color=col_vals[i % n_cols],
                 alax=extdatas[k].type != "alax",
@@ -57,106 +104,46 @@ def plot_all_ext(
                 wavenum=True,
             )
 
-        if args.models:
+        fdata = extdatas[k].fit_params["MCMC"]
+        C2 = fdata[np.where(fdata["name"] == "C2")[0]]["value"].data[0]
+        FM90_p50 = FM90_B3(
+            C1=2.18 - 2.91 * C2,
+            C2=C2,
+            B3=fdata[np.where(fdata["name"] == "B3")[0]]["value"].data[0],
+            C4=fdata[np.where(fdata["name"] == "C4")[0]]["value"].data[0],
+            xo=fdata[np.where(fdata["name"] == "xo")[0]]["value"].data[0],
+            gamma=fdata[np.where(fdata["name"] == "gamma")[0]]["value"].data[0],
+        )
 
-            if hasattr(extdatas[k], "g21_best_fit"):
-                # best fit G21 model
-                if extdatas[k] is not None:
-                    G21_best = G21(
-                        scale=extdatas[k].g21_best_fit["SCALE"],
-                        alpha=extdatas[k].g21_best_fit["ALPHA"],
-                        sil1_amp=extdatas[k].g21_best_fit["SIL1_AMP"],
-                        sil1_center=extdatas[k].g21_best_fit["SIL1_CENTER"],
-                        sil1_fwhm=extdatas[k].g21_best_fit["SIL1_FWHM"],
-                        sil1_asym=extdatas[k].g21_best_fit["SIL1_ASYM"],
-                        sil2_amp=extdatas[k].g21_best_fit["SIL2_AMP"],
-                        sil2_center=extdatas[k].g21_best_fit["SIL2_CENTER"],
-                        sil2_fwhm=extdatas[k].g21_best_fit["SIL2_FWHM"],
-                        sil2_asym=extdatas[k].g21_best_fit["SIL2_ASYM"],
-                    )
+        mod_y = FM90_p50(mod_x_fm90)
+        rv = extdatas[k].columns["RV"][0]
+        mod_y = (mod_y / rv) + 1
 
-                mod_y = G21_best(mod_x_g21) / normval + i * yoffset_factor
+        mod_y = mod_y / normval + (i * yoffset_factor)
 
-                if annotate_key == "MIRI_IFU":
-                    annx = 4.0
-                    annx_delta = 1.0
-                    annvals = np.absolute(mod_x_g21.value - annx) < annx_delta
-                    anny = np.mean(mod_y[annvals]) + 0.1 * yoffset_factor - 0.005
-                    ax.text(
-                        annx,
-                        anny,
-                        extnames[k].split("_")[0],
-                        color=col_vals[i % n_cols],
-                        alpha=0.75,
-                        fontsize=12,
-                        horizontalalignment="center",
-                        rotation=-12.0,
-                    )
+        if annotate_key == "STIS":
+            annx = 3.5
+            annx_delta = 0.25
+            annvals = np.absolute(mod_x_fm90.value - annx) < annx_delta
+            anny = np.mean(mod_y[annvals]) + 0.1 * yoffset_factor
+            ax.text(
+                annx,
+                anny,
+                extnames[k].split("_")[1],
+                color=col_vals[i % n_cols],
+                alpha=0.75,
+                fontsize=12,
+                rotation=10.0,
+                horizontalalignment="center",
+            )
 
-                ax.plot(
-                    mod_x_g21,
-                    mod_y,
-                    lin_vals[i % 3],
-                    color=col_vals[i % n_cols],
-                    alpha=0.5,
-                )
-
-                if annotate_key == "STIS":
-                    annx = 0.25
-                    annx_delta = 0.02
-                    annvals = np.absolute(extdatas[k].waves["STIS"].value - annx) < annx_delta
-                    mod_y = extdatas[k].exts["STIS"] / normval + i * yoffset_factor
-                    anny = np.mean(mod_y[annvals]) - 0.1 * yoffset_factor - 0.1
-                    ax.text(
-                        annx,
-                        anny,
-                        extnames[k].split("_")[0],
-                        color=col_vals[i % n_cols],
-                        alpha=0.75,
-                        fontsize=12,
-                        rotation=-25.0,
-                        horizontalalignment="center",
-                    )
-
-            if extdatas_fm90[k] is not None:
-                if hasattr(extdatas_fm90[k], "fm90_best_fit"):
-                    # best fit FM90 model
-                    if extdatas_fm90[k] is not None:
-
-                        FM90_p50 = FM90(
-                            C1=extdatas_fm90[k].fm90_p50_fit["C1"][0],
-                            C2=extdatas_fm90[k].fm90_p50_fit["C2"][0],
-                            C3=extdatas_fm90[k].fm90_p50_fit["C3"][0],
-                            C4=extdatas_fm90[k].fm90_p50_fit["C4"][0],
-                            xo=extdatas_fm90[k].fm90_p50_fit["XO"][0],
-                            gamma=extdatas_fm90[k].fm90_p50_fit["GAMMA"][0],
-                        )
-
-                        mod_y = FM90_p50(mod_x_fm90) / normval + i * yoffset_factor
-
-                        if annotate_key == "STIS":
-                            annx = 0.28
-                            annx_delta = 0.02
-                            annvals = np.absolute(mod_x_fm90.value - annx) < annx_delta
-                            anny = np.mean(mod_y[annvals]) + 0.1 * yoffset_factor
-                            ax.text(
-                                annx,
-                                anny,
-                                extnames[k].split("_")[0],
-                                color=col_vals[i % n_cols],
-                                alpha=0.75,
-                                fontsize=12,
-                                rotation=-10.0,
-                                horizontalalignment="center",
-                            )
-
-                        ax.plot(
-                            mod_x_fm90,
-                            mod_y,
-                            lin_vals[i % 3],
-                            color="k",  # col_vals[i % n_cols],
-                            alpha=0.5,
-                        )
+        ax.plot(
+            mod_x_fm90,
+            mod_y,
+            lin_vals[i % 3],
+            color="k",  # col_vals[i % n_cols],
+            alpha=0.5,
+        )
 
     ax.set_yscale("linear")
     #ax.set_xscale("log")
@@ -196,39 +183,24 @@ if __name__ == "__main__":
     avs = []
 
     normtype = "STIS"
-    norm_wave_range = [0.25, 0.30] * u.micron
+    norm_wave_range = [0.15, 0.20] * u.micron
     normvals = []
 
     for name in starnames:
         extnames.append(name)
-        bfilename = f"exts/{name}_mefit_elv.fits"
+        bfilename = f"exts/{name}_mefit_ext_elv.fits"
         text = ExtData(filename=bfilename)
         text.trans_elv_alav()
         extdatas.append(text)
         avs.append(text.columns["AV"][0])
 
-        # determine the extinction in the near-UV
-        # useful for sorting to make a pretty plot
-        if "STIS" in text.exts.keys():
-            (gindxs,) = np.where(
-                (text.npts[normtype] > 0)
-                & (
-                    (text.waves[normtype] >= norm_wave_range[0])
-                    & (text.waves[normtype] <= norm_wave_range[1])
-                )
-            )
-            normvals.append(
-                np.average(
-                    (text.exts[normtype][gindxs]) / float(text.columns["AV"][0])
-                    + 1.0
-                )
-            )
-        else:
-            normvals.append(1.0)
+        fdata = text.fit_params["MCMC"]
+        C2 = fdata[np.where(fdata["name"] == "C2")[0]]["value"].data[0]
+        rv = fdata[np.where(fdata["name"] == "Rv")[0]]["value"].data[0]
+        normvals.append(C2/rv + 1)
 
-    # print(normvals)
     normvals = np.array(normvals)
-    sindxs = np.flip(np.argsort(normvals))
+    sindxs = np.argsort(normvals)
     normvals = normvals[sindxs]
     extnames = np.array(extnames)[sindxs]
 
@@ -236,18 +208,11 @@ if __name__ == "__main__":
     avs = []
 
     for extname in extnames:
-        bfilename = f"exts/{extname}_mefit_elv.fits"
+        bfilename = f"exts/{extname}_mefit_ext_elv.fits"
         text = ExtData(filename=bfilename)
         text.trans_elv_alav()
         extdatas.append(text)
         avs.append(text.columns["AV"][0])
-
-        fm90_filename = bfilename.replace(".fits", "_FM90.fits")
-        if os.path.isfile(fm90_filename):
-            textfm90 = ExtData(filename=fm90_filename)
-            extdatas_fm90.append(textfm90)
-        else:
-            extdatas_fm90.append(None)
 
     fontsize = 18
 
@@ -269,15 +234,16 @@ if __name__ == "__main__":
     plot_all_ext(
         ax[0],
         extdatas,
+        starnames,
         kxrange=[0.3, 9.0],
-        kyrange=[1.0, 30.0],
-        normvals=normvals,
+        #normvals=normvals,
+        normvals=None,
         # annotate_key=None,
         annotate_key="STIS",
-        yoffset_factor=0.6,
+        yoffset_factor=1.0,
     )
 
-    ax[0].set_ylim(-0.5, 12.0)
+    ax[0].set_ylim(-0.5, 22.0)
     ax[0].set_ylabel(r"$A(\lambda)/A(V)$ + constant")
 
     fig.tight_layout()  # rect=(0.9,0.9))

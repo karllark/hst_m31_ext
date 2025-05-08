@@ -20,14 +20,15 @@ if __name__ == "__main__":
         edata = ExtData(filename=cfile)
 
         emod = G23(Rv=edata.columns["RV"][0])
-        print(cname, edata.columns["RV"][0])
 
-        af475w_av = emod(0.477217 * u.micron)
-        av = edata.columns["AV"][0]
+        if edata.type_rel_band != "V":
+            print(cname, edata.columns["RV"][0], edata.type_rel_band)
+            af475w_av = emod(0.477217 * u.micron)
+            av = edata.columns["AV"][0]
 
-        for ckey in edata.exts.keys():
-            edata.exts[ckey] += (af475w_av - 1.0) * av
+            for ckey in edata.exts.keys():
+                edata.exts[ckey] += (af475w_av - 1.0) * av
 
-        edata.type_rel_band = "V"
+            edata.type_rel_band = "V"
 
-        edata.save(cfile.replace("_ext.fits", "_elv.fits"))
+        edata.save(cfile.replace("_ext.fits", "_ext_elv.fits"))

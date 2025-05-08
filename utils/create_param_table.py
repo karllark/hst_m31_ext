@@ -30,7 +30,7 @@ if __name__ == "__main__":
         otab_lat = QTable(
             # fmt: off
             names=("Name", 
-                   r"$A(V)$", r"$R(V)$", r"$log(NHI)$"),
+                   r"$A(V)$", r"$R(V)$", r"$log[N(HI)]$"),
             dtype=("S", "S", "S", "S")
             # fmt:on
         )
@@ -146,7 +146,7 @@ if __name__ == "__main__":
             format="aastex",
             col_align="lccccc",
             latexdict={
-                "caption": r"Extinction Parameters \label{tab_ext_col_param}",
+                "caption": r"Column Parameters \label{tab_ext_col_param}",
             },
             overwrite=True,
         )

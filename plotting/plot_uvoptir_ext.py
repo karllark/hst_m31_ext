@@ -12,18 +12,20 @@ from measure_extinction.extdata import ExtData
 
 def mask_bad(cdata, cname):
     # mask bad data (lines)
-    mask = [(8.4, 8.05),
-            (7.27, 7.10),
-            (7.55, 7.45),
-            (7.75, 7.65),
-            (7.95, 7.9),
-            (6.6, 6.4),
-            (4.22, 4.17),
-            (4.28, 4.255),
-            (3.51, 3.49),
-            (3.59, 3.56),
-            (3.87, 3.82)]
-    
+    mask = [
+        (8.4, 8.05),
+        (7.27, 7.10),
+        (7.55, 7.45),
+        (7.75, 7.65),
+        (7.95, 7.9),
+        (6.6, 6.4),
+        (4.22, 4.17),
+        (4.28, 4.255),
+        (3.51, 3.49),
+        (3.59, 3.56),
+        (3.87, 3.82),
+    ]
+
     # add exclude regions
     exreg = {
         "e1": [0.17, 0.2],
@@ -60,7 +62,14 @@ def mask_bad(cdata, cname):
 
 
 def plot_all_ext(
-    ax, extdatas, snames, kxrange, normvals=None, yoffset_factor=0.0, annotate_key=None
+    ax,
+    extdatas,
+    snames,
+    kxrange,
+    normvals=None,
+    yoffset_factor=0.0,
+    annotate_key=None,
+    topxaxis=True,
 ):
     """
     plot all the extintion info on the specified plot
@@ -85,7 +94,7 @@ def plot_all_ext(
             normval = 1.0
 
         # plot the extinction curves
-        #if extnames[k].split("_")[0] == "hd283809":
+        # if extnames[k].split("_")[0] == "hd283809":
         #    extdatas[k].npts["IUE"][extdatas[k].waves["IUE"] > 0.315 * u.micron] = 0
 
         if not args.modonly:
@@ -146,7 +155,7 @@ def plot_all_ext(
         )
 
     ax.set_yscale("linear")
-    #ax.set_xscale("log")
+    # ax.set_xscale("log")
     ax.set_xlim(kxrange)
     ax.set_ylabel(r"$A(\lambda)/A(V)$", fontsize=1.3 * fontsize)
 
@@ -154,6 +163,17 @@ def plot_all_ext(
 
     ax.tick_params("both", length=10, width=2, which="major")
     ax.tick_params("both", length=5, width=1, which="minor")
+
+    if topxaxis:
+        # for 2nd x-axis with lambda values
+        axis_xs = np.array([0.12, 0.15, 0.2, 0.3, 0.5, 1.0])
+        new_ticks = 1 / axis_xs
+        new_ticks_labels = ["%.2f" % z for z in axis_xs]
+        tax = ax.twiny()
+        tax.set_xlim(ax.get_xlim())
+        tax.set_xticks(new_ticks)
+        tax.set_xticklabels(new_ticks_labels, fontsize=0.8 * fontsize)
+        tax.set_xlabel(r"$\lambda$ [$\mu$m]")
 
 
 if __name__ == "__main__":
@@ -197,7 +217,7 @@ if __name__ == "__main__":
         fdata = text.fit_params["MCMC"]
         C2 = fdata[np.where(fdata["name"] == "C2")[0]]["value"].data[0]
         rv = fdata[np.where(fdata["name"] == "Rv")[0]]["value"].data[0]
-        normvals.append(C2/rv + 1)
+        normvals.append(C2 / rv + 1)
 
     normvals = np.array(normvals)
     sindxs = np.argsort(normvals)
@@ -236,7 +256,7 @@ if __name__ == "__main__":
         extdatas,
         starnames,
         kxrange=[0.3, 9.0],
-        #normvals=normvals,
+        # normvals=normvals,
         normvals=None,
         # annotate_key=None,
         annotate_key="STIS",

@@ -40,7 +40,7 @@ Figures
 
 2. UV-NIR spectra/photometry of all stars: plotting/plot_spec_stack.py
 
-3. UV-NIR extinction curves: plotting/plot_uvoptir_ext.py
+3. UV-NIR extinction curves: plotting/plot_uvoptir_ext.py --rebin_fac 5
 
 Tables
 ------

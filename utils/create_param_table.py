@@ -30,8 +30,8 @@ if __name__ == "__main__":
         otab_lat = QTable(
             # fmt: off
             names=("Name", 
-                   r"$A(V)$", r"$R(V)$", r"$log[N(HI)]$"),
-            dtype=("S", "S", "S", "S")
+                   r"$A(V)$", r"$R(V)$", r"$log[N(HI)]$", r"$A(V)_\mathrm{MW}$", r"$log[N(HI)]_\mathrm{MW}$"),
+            dtype=("S", "S", "S", "S", "S", "S")
             # fmt:on
         )
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         )
 
 
-        colnames = ["Av", "Rv", "logHI_exgal"]
+        colnames = ["Av", "Rv", "logHI_exgal", "fore_Av", "logHI_MW"]
         fm90names = ["C2", "B3", "C4", "xo", "gamma"]
         stellnames = ["logTeff", "logg", "logZ", "vturb"]
         
@@ -104,10 +104,13 @@ if __name__ == "__main__":
                             rdata_lat.append(fr"\nodata")
                         else:
                             rdata_lat.append(fr"${sval:.2f} \pm {sunc:.2f}$")
+                    elif ccol in ["fore_Av", "logHI_MW"]:
+                        rdata_lat.append(fr"${val:.2f}$")
                     else:
                         rdata_lat.append(fr"${val:.2f} \pm {unc:.2f}$")
-                    rdata.append(val)
-                    rdata.append(unc)
+                    if ccol not in ["fore_Av", "logHI_MW"]:
+                        rdata.append(val)
+                        rdata.append(unc)
 
                 for ccol in fm90names:
                     idx, = np.where(fdata["name"] == ccol)
@@ -144,7 +147,7 @@ if __name__ == "__main__":
         otab_lat.write(
             f"tables/{basestr}{ctype}_ensemble_dust_params.tex",
             format="aastex",
-            col_align="lccccc",
+            col_align="lccccccc",
             latexdict={
                 "caption": r"Column Parameters \label{tab_ext_col_param}",
             },

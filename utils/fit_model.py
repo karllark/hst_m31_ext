@@ -23,7 +23,7 @@ def fit_model_parser():
     parser.add_argument(
         "--path",
         help="Path to star data",
-        default="/home/kgordon/Python/extstar_data/DAT_files/",
+        default="/home/kgordon/Python/extstar_data/M31/",
     )
     parser.add_argument(
         "--modtype",
@@ -191,7 +191,9 @@ def main():
         memod.add_exclude_region(np.flip(1.0 / (np.array(exreg[snum]) * u.micron)))
 
     # setup the relative band for the extinction curve
-    if snum in ["e17", "e18", "e22", "e24"]:
+    if snum in ["e17", "e24"]:
+        rel_band = "WFPC2_F439W"
+    elif snum in ["e18"]:
         rel_band = "V"
     else:
         rel_band = "ACS_F475W"

@@ -38,18 +38,20 @@ the dust_extinction G23 R(V) dependent extinction model.
 Figures
 ------- 
 
-2. UV-NIR spectra/photometry of all stars: plotting/plot_spec_stack.py
+2. UV-NIR spectra/photometry of all stars: `plotting/plot_spec_stack.py`
 
 3. Example fit to data for one star: result from uitls/fit_model.py given in figs/ *or*
    by running the `meplot_model` from measure_extinction.
 
-4. UV-NIR extinction curves: plotting/plot_uvoptir_ext.py --rebin_fac 5
+4. UV-NIR extinction curves: `plotting/plot_uvoptir_ext.py --rebin_fac 5`
 
 5. A(V) vs R(V) and FM90 parmaeters versus each other: uses the the extinction_ensemble package
    with `plot_many_param_vs_param.py --fm90_noc1 --datasets GCC09 G03_lmc G24_smc C25_m31`
 
 6. A(V) and main FM90 parameters versus N(HI)/A(V): uses the the extinction_ensemble package
    with `plot_many_param_vs_param.py --gdprops --datasets GCC09 G03_lmc G24_smc C25_m31`
+
+7. Average SMC extinction curve: `plotting/plot_m31ave.py`
 
 Tables
 ------

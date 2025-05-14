@@ -22,12 +22,22 @@ if __name__ == "__main__":
         emod = G23(Rv=edata.columns["RV"][0])
 
         if edata.type_rel_band != "V":
-            print(cname, edata.columns["RV"][0], edata.type_rel_band)
-            af475w_av = emod(0.477217 * u.micron)
+            if edata.type_rel_band == "ACS_F475W":
+                rel_wave = 0.477217 * u.micron
+            elif edata.type_rel_band == "WFPC2_F439W":
+                rel_wave = 0.439 * u.micron
+            else:
+                print(edata.type_rel_band, "not supported")
+                exit()
+
+            relband_to_av = emod(rel_wave)
             av = edata.columns["AV"][0]
 
+            delt_val = (relband_to_av - 1.0) * av
             for ckey in edata.exts.keys():
-                edata.exts[ckey] += (af475w_av - 1.0) * av
+                edata.exts[ckey] += delt_val
+
+            print(cname, edata.columns["RV"][0], edata.type_rel_band, delt_val)
 
             edata.type_rel_band = "V"
 

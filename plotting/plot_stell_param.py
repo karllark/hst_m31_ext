@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
     fig.tight_layout()  # rect=(0.9,0.9))
 
-    save_str = "wisci_stell_param"
+    save_str = "m31_stell_param"
     if args.png:
         fig.savefig(f"figs/{save_str}.png")
     elif args.pdf:

@@ -42,6 +42,7 @@ if __name__ == "__main__":
     starnames = []
     extdatas = []
     spslopes = []
+    rvs = []
     # rebinfac = None
     rebinfac = 10
     for line in file_lines:
@@ -54,6 +55,7 @@ if __name__ == "__main__":
             text.trans_elv_alav()
 
             extdatas.append(text)
+            rvs.append(text.columns["RV"][0])
 
             text.plot(
                 ax,
@@ -63,6 +65,10 @@ if __name__ == "__main__":
                 wavenum=True,
             )
     aveext = AverageExtData(extdatas, min_number=2)
+
+    ave_rv = np.average(rvs)
+    print(f"average R(V) = {ave_rv}")
+    aveext.columns["RV"] = (ave_rv, 0.0)
 
     aveext.save(ofilename)
 
@@ -116,7 +122,7 @@ if __name__ == "__main__":
         rebin_fac=rebinfac,
         wavenum=True,
         legend_key="STIS",
-        legend_label=f"{klabel}: R(V) = {rv:.2f}",
+        legend_label=f"{klabel}: R(V) = {ave_rv:.2f}",
     )
 
     # rebin to a constant resolution for the tables
@@ -155,7 +161,7 @@ if __name__ == "__main__":
     aveext.save(ofilename.replace(".fits", "res25.fits"))
 
     ax.set_ylim(0.0, 7.0)
-    ax.legend(loc="upper left")
+    ax.legend(loc="upper left", fontsize=0.8*fontsize)
 
     fig.tight_layout()
 

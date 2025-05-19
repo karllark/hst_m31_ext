@@ -61,3 +61,4 @@ Tables
 4. Column parameters: utils/create_param_table.py
 
 5. FM90 parameters: utils/create_param_table.py
+   For M31 average values, `utils/fit_ave_fm90`.

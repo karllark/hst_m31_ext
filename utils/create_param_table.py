@@ -7,7 +7,10 @@ from measure_extinction.extdata import conv55toAv, conv55toRv, conv55toEbv
 
 
 def prettyname(name):
-    return name.split("_")[1]
+    if name == "m31ave":
+        return "M31 Average"
+    else:
+        return name.split("_")[1]
 
 
 if __name__ == "__main__":
@@ -35,7 +38,6 @@ if __name__ == "__main__":
             # fmt:on
         )
 
-
         otab_lat2 = QTable(
             # fmt: off
             names=("Name", r"$C_2$", r"$B_3$", r"$C_4$", r"$x_o$", r"$\gamma$"),
@@ -51,11 +53,10 @@ if __name__ == "__main__":
             # fmt:on
         )
 
-
         colnames = ["Av", "Rv", "logHI_exgal", "fore_Av", "logHI_MW"]
         fm90names = ["C2", "B3", "C4", "xo", "gamma"]
         stellnames = ["logTeff", "logg", "logZ", "vturb"]
-        
+
         files = ["all"]
         tags = ["All"]
         for cfile, ctag in zip(files, tags):
@@ -72,10 +73,17 @@ if __name__ == "__main__":
             # starnames = np.sort(starnames)
 
             for cname in starnames:
-                ctype = ""
-                cpath = "exts"
-                cfile = f"{cpath}/{cname}_mefit_ext.fits"
+
+                if cname == "m31ave":
+                    ctype = ""
+                    cfile = f"exts/m31_ext_FM90.fits"
+                else:
+                    cfile = f"exts/{cname}_mefit_ext.fits"
+
+                pcname = prettyname(cname)
+                print(pcname)
                 edata = ExtData(filename=cfile)
+
                 fdata = edata.fit_params["MCMC"]
 
                 rdata = []
@@ -83,56 +91,54 @@ if __name__ == "__main__":
                 rdata_lat2 = []
                 rdata_lat3 = []
                 rdata.append(cname)
-                pcname = prettyname(cname)
-                print(pcname)
                 rdata_lat.append(pcname)
                 rdata_lat2.append(pcname)
                 rdata_lat3.append(pcname)
 
                 for ccol in colnames:
-                    idx, = np.where(fdata["name"] == ccol)
+                    (idx,) = np.where(fdata["name"] == ccol)
                     val = fdata[idx]["value"].data[0]
                     unc = fdata[idx]["unc"].data[0]
                     if ccol == "logHI_exgal":
                         sval = val
                         sunc = unc
-                        val = 10 ** val
-                        unc *= np.log(10.) * val
+                        val = 10**val
+                        unc *= np.log(10.0) * val
                         if unc / val > 0.5:
                             val = 0.0
                             unc = 0.0
-                            rdata_lat.append(fr"\nodata")
+                            rdata_lat.append(rf"\nodata")
                         else:
-                            rdata_lat.append(fr"${sval:.2f} \pm {sunc:.2f}$")
+                            rdata_lat.append(rf"${sval:.2f} \pm {sunc:.2f}$")
                     elif ccol in ["fore_Av", "logHI_MW"]:
-                        rdata_lat.append(fr"${val:.2f}$")
+                        rdata_lat.append(rf"${val:.2f}$")
                     else:
-                        rdata_lat.append(fr"${val:.2f} \pm {unc:.2f}$")
+                        rdata_lat.append(rf"${val:.2f} \pm {unc:.2f}$")
                     if ccol not in ["fore_Av", "logHI_MW"]:
                         rdata.append(val)
                         rdata.append(unc)
 
                 for ccol in fm90names:
-                    idx, = np.where(fdata["name"] == ccol)
+                    (idx,) = np.where(fdata["name"] == ccol)
                     val = fdata[idx]["value"].data[0]
                     unc = fdata[idx]["unc"].data[0]
                     rdata.append(val)
                     rdata.append(unc)
                     if ccol == "xo":
-                        tstr = fr"${val:.3f} \pm {unc:.3f}$"
+                        tstr = rf"${val:.3f} \pm {unc:.3f}$"
                     else:
-                        tstr = fr"${val:.2f} \pm {unc:.2f}$"
+                        tstr = rf"${val:.2f} \pm {unc:.2f}$"
                     rdata_lat2.append(tstr)
                 otab_lat2.add_row(rdata_lat2)
 
                 for ccol in stellnames:
-                    idx, = np.where(fdata["name"] == ccol)
+                    (idx,) = np.where(fdata["name"] == ccol)
                     val = fdata[idx]["value"].data[0]
                     unc = fdata[idx]["unc"].data[0]
                     if ccol in ["logTeff", "logg", "logZ"]:
-                        tstr = fr"${val:.3f} \pm {unc:.3f}$"
+                        tstr = rf"${val:.3f} \pm {unc:.3f}$"
                     else:
-                        tstr = fr"${val:.2f} \pm {unc:.2f}$"
+                        tstr = rf"${val:.2f} \pm {unc:.2f}$"
                     rdata_lat3.append(tstr)
                 otab_lat3.add_row(rdata_lat3)
 
@@ -141,7 +147,9 @@ if __name__ == "__main__":
 
         basestr = "C25_m31"
         otab.write(
-            f"tables/{basestr}{ctype}_ensemble_params.dat", format="ascii.ipac", overwrite=True
+            f"tables/{basestr}{ctype}_ensemble_params.dat",
+            format="ascii.ipac",
+            overwrite=True,
         )
 
         otab_lat.write(

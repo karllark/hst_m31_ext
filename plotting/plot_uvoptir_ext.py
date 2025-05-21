@@ -223,6 +223,7 @@ if __name__ == "__main__":
     sindxs = np.argsort(normvals)
     normvals = normvals[sindxs]
     extnames = np.array(extnames)[sindxs]
+    starnames = np.array(starnames)[sindxs]
 
     extdatas = []
     avs = []

@@ -159,7 +159,7 @@ def plot_all_ext(
     ax.set_xlim(kxrange)
     ax.set_ylabel(r"$A(\lambda)/A(V)$", fontsize=1.3 * fontsize)
 
-    ax.set_xlabel(r"$\lambda$ [$\mu m$]")
+    ax.set_xlabel(r"$1/\lambda$ [$\mu m^{-1}$]")
 
     ax.tick_params("both", length=10, width=2, which="major")
     ax.tick_params("both", length=5, width=1, which="minor")

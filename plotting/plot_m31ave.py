@@ -79,7 +79,7 @@ if __name__ == "__main__":
     ax.plot(
         mod_x,
         mod(mod_x),
-        "r--",
+        "k--",
         alpha=0.75,
         label=f"Milky Way: G23 R(V)={rv:.2f}",
         linewidth=3.0,
@@ -90,7 +90,8 @@ if __name__ == "__main__":
     ax.plot(
         mod_x,
         mod(mod_x),
-        "c--",
+        color="tab:orange",
+        linestyle="--",
         alpha=0.75,
         label=f"LMC Average: G03",
         linewidth=3.0,
@@ -100,7 +101,7 @@ if __name__ == "__main__":
     ax.plot(
         mod_x,
         mod(mod_x),
-        "y--",
+        "c--",
         alpha=0.75,
         label=f"LMC2 Supershell: G03",
         linewidth=3.0,
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     ax.plot(
         mod_x,
         mod(mod_x),
-        "g--",
+        "b--",
         alpha=0.75,
         label=f"SMC Average: G24",
         linewidth=3.0,
@@ -118,7 +119,7 @@ if __name__ == "__main__":
 
     aveext.plot(
         ax,
-        color="b",
+        color="r",
         rebin_fac=rebinfac,
         wavenum=True,
         legend_key="STIS",

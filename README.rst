@@ -40,8 +40,9 @@ Figures
 
 2. UV-NIR spectra/photometry of all stars: `plotting/plot_spec_stack.py`
 
-3. Example fit to data for one star: result from uitls/fit_model.py given in figs/ *or*
-   by running the `meplot_model` from measure_extinction.
+3. Example fit to data for one star: result from utils/fit_model.py given in figs/ *or*
+   by running the `meplot_model` from measure_extinction.  For example:
+   `meplot_model m31_e3_j004420.52+411751.1 --obspath /home/kgordon/Python/extstar_data/M31/`
 
 4. UV-NIR extinction curves: `plotting/plot_uvoptir_ext.py --rebin_fac 5`
 

@@ -64,7 +64,7 @@ if __name__ == "__main__":
                 rebin_fac=rebinfac,
                 wavenum=True,
             )
-    aveext = AverageExtData(extdatas, min_number=2)
+    aveext = AverageExtData(extdatas, min_number=5)
 
     ave_rv = np.average(rvs)
     print(f"average R(V) = {ave_rv}")
